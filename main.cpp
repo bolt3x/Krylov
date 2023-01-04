@@ -2,10 +2,11 @@
 
 #include "matrix.hpp"
 #include "cg.hpp"
+#include "identity.hpp"
 
 int main(){
 
-  double n = 10;
+  double n = 1000;
   Krylov::Vector<double> x(n);
 	Krylov::Vector<double> x_e(n);
   Krylov::Vector<double> b(n);
@@ -23,9 +24,13 @@ int main(){
 
 	b = A * x;
 
-	double tol = 1e-2;
-	int max_iter = 10;
-	int res = Krylov::CG<Krylov::Matrix<double>,Krylov::Vector<double>>(A,x_e,b,max_iter,tol);
+	double tol = 1e-10;
+	int max_iter = 1000;
+  Krylov::IdentityPreconditioner<double> id;
+	int res = Krylov::CG(A,x_e,b,id,max_iter,tol);
 
 	std::cout << max_iter << std::endl;
+  std::cout << tol << std::endl;
+  std::cout << (x - x_e).norm() << std::endl;
+
 }

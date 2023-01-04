@@ -170,11 +170,13 @@ std::ostream &operator<<(std::ostream &out, Vector<Scalar> const &v);
 /*!
  * Scalar Vector product
  *
- * @param k scalar to be multiplied with
+ * @param k scalar
+ * @param v vector
  * @return The result of k * v
  */
 template<typename Scalar,typename Arithmetic_Type>
 Vector<Scalar> operator*(Arithmetic_Type const &k,Vector<Scalar> const &v);			
+
 /*
  * ***************************************************************************
  * Definitions
