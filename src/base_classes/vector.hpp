@@ -37,6 +37,20 @@ public:
 	{
 		buffer.resize(nValues);
 	}
+  
+  /*!
+   * Constructor may take size of the vector and 
+   * values to fill the vector with
+   * @param size
+   * @param value
+   */
+	Vector(std::size_t size,Scalar value)
+		: nValues{size}
+	{
+		buffer.resize(nValues);
+		for(auto& i : buffer)
+			i = value;
+	}
 
   /*!
    * Sets a new size
@@ -111,9 +125,9 @@ public:
     return buffer.data();
   }
 
-	/*!
+  /*!
    * Dot product
-	 *
+   *
    * @param v a vector
    * @return The result of <v,w>
    */
@@ -170,12 +184,12 @@ std::ostream &operator<<(std::ostream &out, Vector<Scalar> const &v);
 /*!
  * Scalar Vector product
  *
- * @param k scalar
+ * @param k scalar, it should be a double
  * @param v vector
  * @return The result of k * v
  */
-template<typename Scalar,typename Arithmetic_Type>
-Vector<Scalar> operator*(Arithmetic_Type const &k,Vector<Scalar> const &v);			
+template<typename Scalar>
+Vector<Scalar> operator*(double const &k,Vector<Scalar> const &v);			
 
 /*
  * ***************************************************************************
@@ -276,9 +290,9 @@ operator<<(std::ostream &out, Vector<Scalar> const &v)
 	return out;
 }
 
-template<typename Scalar,typename Arithmetic_Type>
+template<typename Scalar>
 Vector<Scalar>
-operator*(Arithmetic_Type const &k,Vector<Scalar> const &v)
+operator*(double const &k,Vector<Scalar> const &v)
 {
 	Vector<Scalar> res(v.size());
 

@@ -12,7 +12,6 @@
 #include <random>
 #include <type_traits>
 #include <vector>
-#include "vector.hpp"
 // To avoid stupid warnings if I do not use openmp
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
@@ -24,7 +23,7 @@ namespace Krylov
  	 * @tparam Scalar The type of the element
    * @tparam Vector The vector class to be multiplied with
 	 */
-	template<typename SCALAR,class Vector = Krylov::Vector<SCALAR>> class SparseMatrix
+	template<typename SCALAR> class SparseMatrix
 	{
 	public:
 		using Scalar = SCALAR;
@@ -104,17 +103,48 @@ namespace Krylov
 	}
 
 	/*!
+   * Number of rows
+   * @return
+   */
+  auto
+  rows() const
+  {
+    return nRows;
+  };
+  /*!
+   * Number of columns
+   * @return
+   */
+  auto
+  cols() const
+  {
+    return nCols;
+  };
+
+	/*!
    * Multiplication with a std::vector
    *
    * @note to be complete I should also add the multiplication with a matrix
    * with just one culumn
    *
+	 * @tparam Vector class
    * @param v a vector
    * @return The result of A*v
    */
+	template<class Vector>
   Vector operator*(Vector const &v) const;
 
-	public:
+  /*!
+   * Method to extract a column
+   *
+   * @tparam the column that will be copied 
+   * @param v vector where the column is stored
+   * @param index the column index
+   */
+  template<class Vector>
+  void extract_column(Vector &v,std::size_t const &index) const;
+
+	protected:
 		std::size_t nRows;
 		std::size_t nCols;
 		std::size_t nnz;
@@ -130,8 +160,8 @@ namespace Krylov
  * @param mat
  * @return
  */
-template <typename Scalar,class Vector>
-std::ostream &operator<<(std::ostream &out, SparseMatrix<Scalar,Vector> const &mat);
+template <typename Scalar>
+std::ostream &operator<<(std::ostream &out, SparseMatrix<Scalar> const &mat);
 
 /*
  * ***************************************************************************
@@ -139,12 +169,13 @@ std::ostream &operator<<(std::ostream &out, SparseMatrix<Scalar,Vector> const &m
  * ***************************************************************************
  */
 
-template <typename Scalar,class Vector>
+template <typename Scalar>
+template<class Vector>
 Vector
-SparseMatrix<Scalar,Vector>::operator*(Vector const &v) const
+SparseMatrix<Scalar>::operator*(Vector const &v) const
 {
 	Vector res(nRows);
-	for(std::size_t i = 0; i < nRows ; ++i)
+	for(std::size_t i = 0; i < nRows; ++i)
 	{
 		Scalar r{0};
 #pragma omp parallel for shared(i, res) reduction(+ : r)
@@ -159,18 +190,31 @@ SparseMatrix<Scalar,Vector>::operator*(Vector const &v) const
 	return res;
 }
 
-template <typename Scalar,class Vector>
+template<typename Scalar>
+template <class Vector>
+void
+SparseMatrix<Scalar>:: extract_column(Vector &v,std::size_t const &index) const
+{
+
+#pragma omp parallel for
+  for(std::size_t i = 0; i < nRows; i++)
+  {
+    v[i] = this->operator()(i,index);
+  }
+}
+
+template <typename Scalar>
 std::ostream &
-operator<<(std::ostream &out, SparseMatrix<Scalar,Vector> const &mat)
+operator<<(std::ostream &out, SparseMatrix<Scalar> const &mat)
 {
   out << "[" << std::endl;
-  for(std::size_t i = 0u; i < mat.nRows; ++i)
+  for(std::size_t i = 0u; i < mat.rows(); ++i)
     {
-      for(std::size_t j = 0u; j < mat.nCols; ++j)
+      for(std::size_t j = 0u; j < mat.cols(); ++j)
         out << mat(i, j) << ", ";
       out << std::endl;
     }
-  out << "]" << std::endl;
+  out << "]";
   return out;
 
 }

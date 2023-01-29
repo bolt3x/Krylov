@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <vector>
 #include <cmath>
-#include "sparse_matrix.hpp"
+
 // To avoid stupid warnings if I do not use openmp
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
@@ -23,22 +23,24 @@ namespace Krylov
 /*!
  * A simple diagonal preconditioner class
  * @tparam Scalar element
- * @tparam Vector The vector class to "solve" with
  */
 
-template<typename SCALAR,class Matrix = Krylov::SparseMatrix<SCALAR>,class Vector = Krylov::Vector<SCALAR>> class DiagPreconditioner
+template<typename SCALAR> class DiagPreconditioner
 {
 public:
 	using Scalar=SCALAR;
 
 	/*! Constructor takes a sparse matrix
+	 *  @tparam class Matrix
 	 *  @param A matrix from which we compute the inverse
 	 */
+	template<class Matrix>
 	DiagPreconditioner(Matrix const &A) : diag(A.rows())
 	{
 		compute(A);
 	}
 
+	template<class Matrix>
 	void compute(Matrix const &A)
 	{
 #pragma omp parallel for
@@ -50,9 +52,11 @@ public:
     }
 	/*!
 	 * solve method to apply the preconditioner 
+	 * @tparam Vector
 	 * @param v 
 	 * @return the preconditioned vector
 	 */
+	template<class Vector>
 	Vector solve(Vector const &v) const {
         Vector result(v.size());
 #pragma omp parallel for
@@ -60,6 +64,7 @@ public:
 				{
 					result[i] = diag[i] * v[i];
 				}
+
 		return result;
 	}
 

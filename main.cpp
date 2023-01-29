@@ -1,36 +1,37 @@
 #include <iostream>
 
-#include "matrix.hpp"
-#include "cg.hpp"
-#include "identity.hpp"
-
+#include  "./src/base_classes/matrix.hpp"
+#include  "./src/base_classes/vector.hpp"
+#include "./src/iterative_solvers/cg.hpp"
+#include "./src/preconditioners/identity.hpp"
+#include "./src/iterative_solvers/bcgstab.hpp"
+#include "./src/base_classes/sparse_matrix.hpp"
+#include "./src/preconditioners/diag.hpp"
+#include "./src/direct_solvers/qr_solver.hpp"
 int main(){
+ double n = 3; 
 
-  double n = 1000;
-  Krylov::Vector<double> x(n);
-	Krylov::Vector<double> x_e(n);
-  Krylov::Vector<double> b(n);
-  Krylov::Matrix<double> A(n,n);
+ Krylov::SparseMatrix<double> A(n,n);
+ Krylov::Matrix<double> B(n,2);
+ Krylov::Matrix<double> I(n,n);
+ Krylov::Vector<double> xe(n);
+ Krylov::Vector<double> x(2);
 
-  for(int i = 0; i < n; i++){
-        
-    x[i] = 1;
-        
-    A(i, i) = 2.0*(i+1);
-    if(i>0) A(i, i-1) = -i;
-    if(i<n-1) A(i, i+1) = -(i+1);
+ B(0,0) = 2;
+ B(0,1) = 3;
+ B(1,0) = 5;
+ B(1,1) = 30;
+ B(2,0) = 10;
+ B(2,1) = 1;
 
-  }
+ Krylov::Vector<double> b = B * xe;
 
-	b = A * x;
 
-	double tol = 1e-10;
-	int max_iter = 1000;
-  Krylov::IdentityPreconditioner<double> id;
-	int res = Krylov::CG(A,x_e,b,id,max_iter,tol);
+ std::cout << B*I << std::endl;
+ Krylov::QRSolver<double> qr(B);
+ 
+ std::cout << qr.getR() << std::endl;
+ std::cout << qr.solve(b) << std::endl;
 
-	std::cout << max_iter << std::endl;
-  std::cout << tol << std::endl;
-  std::cout << (x - x_e).norm() << std::endl;
-
+ return 0;
 }

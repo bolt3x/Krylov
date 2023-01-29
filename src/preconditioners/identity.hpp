@@ -1,19 +1,18 @@
 /*
- * Preconditioner.hpp
+ * Identity.hpp
  *
- *  Created on: Dec 31, 2022
+ *  Created on: Jan 04, 2023
  *      Author: bolt3x
  */
 
-#ifndef HH_PRECONDITIONER_HH
-#define HH_PRECONDITIONER_HH
+#ifndef HH_ID_HH
+#define HH_ID_HH
 #include <exception>
 #include <iostream>
 #include <random>
 #include <type_traits>
 #include <vector>
 #include <cmath>
-#include "matrix.hpp"
 // To avoid stupid warnings if I do not use openmp
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
@@ -23,10 +22,9 @@ namespace Krylov
 /*!
  * An identity "preconditioner" class
  * @tparam Scalar element
- * @tparam Vector The vector class to "solve" with
  */
 
-template<typename SCALAR,class Vector = Krylov::Vector<SCALAR>> class IdentityPreconditioner
+template<typename SCALAR> class IdentityPreconditioner
 {
 public:
 	using Scalar=SCALAR;
@@ -36,10 +34,12 @@ public:
 	IdentityPreconditioner() = default;
 
 	/*!
-	 * solve method to apply the preconditioner on the residual
+	 * solve method to apply the preconditioner
+	 * @tparam Vector class 
 	 * @param v 
 	 * @return the preconditioned vector
 	 */
+	template<class Vector>
 	Vector solve(Vector const &v) const {
 		return v;
 	}

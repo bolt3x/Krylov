@@ -11,7 +11,6 @@
 #include <iostream>
 #include <random>
 #include <type_traits>
-#include "vector.hpp"
 // To avoid stupid warnings if I do not use openmp
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
@@ -32,7 +31,7 @@ enum class ORDERING
  * @tparam Vector The vector class to be multiplied with
  * @tparam ORDER The Storage order (default row-wise)
  */
-template <typename SCALAR,class Vector = Krylov::Vector<SCALAR>, ORDERING ORDER = ORDERING::ROWMAJOR> class Matrix
+template <typename SCALAR, ORDERING ORDER = ORDERING::ROWMAJOR> class Matrix
 {
 public:
   using Scalar=SCALAR;
@@ -81,7 +80,7 @@ public:
   /*!
    * Get element A(i,j). Non const version
    *
-   *It allows to change the element.
+   * It allows to change the element.
    *
    * @param i
    * @param j
@@ -150,15 +149,46 @@ public:
   }
 
   /*!
-   * Multiplication with a std::vector
+   * Multiplication with a Vector
    *
-   * @note to be complete I should also add the multiplication with a matrix
-   * with just one culumn
-   *
+   * @tparam Vector 
    * @param v a vector
    * @return The result of A*v
    */
+  template<class Vector>
   Vector operator*(Vector const &v) const;
+
+  /*!
+   * Multiplication with another Matrix
+   *
+   * @param matrix a vector
+   * @return The result of A*B
+   */
+  Matrix operator*(Matrix const &B) const;
+
+  /*!
+   * Method to extract a column
+   *
+   * @tparam the column that will be copied 
+   * @param v vector where the column is stored
+   * @param index the column index
+   */
+  template<class Vector>
+  void extract_column(Vector &v,std::size_t const &index) const;
+
+  /*! 
+   * Method to compute a minpr
+   *
+   *  @param k 
+   */
+  Matrix compute_minor(std::size_t const& index) const;
+
+  /*!
+   * Method to compute the transpose
+   *
+   * @return the transpose of the matrix
+   */
+  Matrix transpose() const;
 
   /*!
    * The storage ordering of the matrix
@@ -196,6 +226,7 @@ public:
 protected:
   std::size_t         nRows = 0u;
   std::size_t         nCols = 0u;
+  int                 nnz = 0u;
   std::vector<Scalar> buffer;
 };
 
@@ -207,17 +238,19 @@ protected:
  * @param mat
  * @return
  */
-template <typename Scalar,class Vector, ORDERING ORDER>
-std::ostream &operator<<(std::ostream &out, Matrix<Scalar,Vector, ORDER> const &mat);
+template <typename Scalar, ORDERING ORDER>
+std::ostream &operator<<(std::ostream &out, Matrix<Scalar, ORDER> const &mat);
 
 /*
  * ***************************************************************************
  * Definitions
  * ***************************************************************************
  */
-template <typename Scalar,class Vector, ORDERING ORDER>
+
+template<typename Scalar, ORDERING ORDER>
+template <class Vector>
 Vector
-Matrix<Scalar,Vector, ORDER>::operator*(const Vector &v) const
+Matrix<Scalar,ORDER>::operator*(Vector const &v) const
 {
   Vector res(nRows);
   if constexpr(ORDER == ORDERING::ROWMAJOR)
@@ -231,6 +264,7 @@ Matrix<Scalar,Vector, ORDER>::operator*(const Vector &v) const
 #pragma omp parallel for shared(i, res, offset) reduction(+ : r)
           for(std::size_t j = 0; j < nCols; ++j)
             r += buffer[offset + j] * v[j];
+          
           res[i] = r;
         }
     }
@@ -250,11 +284,70 @@ Matrix<Scalar,Vector, ORDER>::operator*(const Vector &v) const
         }
     }
   return res;
+
 }
 
-template <typename Scalar,class Vector, ORDERING ORDER>
+template<typename Scalar, ORDERING ORDER>
+Matrix<Scalar,ORDER>
+Matrix<Scalar,ORDER>::operator*(Matrix<Scalar,ORDER> const &B) const
+{
+  Matrix<Scalar,ORDER> C(nRows,B.cols());
+  
+  if constexpr(ORDER == ORDERING::ROWMAJOR)
+    for(std::size_t i = 0; i < nRows; i++)
+      for(std::size_t j = 0; j < B.cols(); j++)
+        for(std::size_t k = 0; k < nCols; k++)
+          C(i,j) += buffer[k + i  * nCols] * B(k,j);
+  
+  return C;
+}
+
+template<typename Scalar, ORDERING ORDER>
+template <class Vector>
 void
-Matrix<Scalar, Vector, ORDER>::readFromStream(std::istream &input)
+Matrix<Scalar,ORDER>::extract_column(Vector &v,std::size_t const &index) const
+{
+
+#pragma omp parallel for
+  for(std::size_t i = 0; i < nRows; i++)
+  {
+    v[i] = this->operator()(i,index);
+  }
+}
+
+template<typename Scalar, ORDERING ORDER>
+Matrix<Scalar,ORDER>
+Matrix<Scalar,ORDER>::transpose() const 
+{
+  Matrix<Scalar,ORDER> T(nRows,nCols);
+  for(std::size_t i = 0; i < nRows; i++)
+  {
+    for(std::size_t j = 0; j < nCols; j++)
+    {
+      T(i,j) = this->operator()(j,i);
+    }
+  }
+  return T;
+}
+
+template<typename Scalar, ORDERING ORDER>
+Matrix<Scalar,ORDER>
+Matrix<Scalar,ORDER>::compute_minor(std::size_t const& index) const
+{
+  Matrix<Scalar,ORDER> minor(nRows,nCols);
+  for(std::size_t i = 0; i < index; i++)
+    minor(i,i) = 1;
+
+  for(std::size_t i = index; i < nRows; i++)
+    for(std::size_t j = index;j < nCols; j++)
+      minor(i,j) = this->operator()(i,j);
+  
+  return minor;
+}
+
+template <typename Scalar, ORDERING ORDER>
+void
+Matrix<Scalar, ORDER>::readFromStream(std::istream &input)
 {
   input >> nRows >> nCols;
   resize(nRows, nCols);
@@ -268,9 +361,9 @@ Matrix<Scalar, Vector, ORDER>::readFromStream(std::istream &input)
     }
 }
 
-template <typename Scalar,class Vector, ORDERING ORDER>
+template <typename Scalar, ORDERING ORDER>
 std::ostream &
-operator<<(std::ostream &out, Matrix<Scalar,Vector, ORDER> const &mat)
+operator<<(std::ostream &out, Matrix<Scalar, ORDER> const &mat)
 {
   out << "[" << std::endl;
   for(std::size_t i = 0u; i < mat.rows(); ++i)
@@ -279,13 +372,13 @@ operator<<(std::ostream &out, Matrix<Scalar,Vector, ORDER> const &mat)
         out << mat(i, j) << ", ";
       out << std::endl;
     }
-  out << "]" << std::endl;
+  out << "]";
   return out;
 }
 
-template <typename Scalar,class Vector, ORDERING ORDER>
+template <typename Scalar, ORDERING ORDER>
 void
-Matrix<Scalar, Vector, ORDER>::fillRandom()
+Matrix<Scalar, ORDER>::fillRandom()
 {
   static_assert(std::is_arithmetic_v<Scalar>,
                 "fillRandom requires elements of  arithmetic type");
