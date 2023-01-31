@@ -39,6 +39,20 @@ namespace Krylov
     rowPtrs.resize(nRows + 1);
   }	
 
+	/*!
+     * Constructor may take number of rows and columns and number of non zero elements
+	 * @param nnzs non zero elements
+	 * @param rows number of rows
+	 * @param col number of columns
+	 */
+	SparseMatrix(std::size_t rows, std::size_t cols,std::size_t nnz_)
+    : nRows{rows}, nCols{cols}, nnz{nnz_}
+  	{	
+    rowPtrs.resize(nRows + 1);
+	buffer.resize(nnz);
+	colInd.resize(nnz);
+  	}	
+
 	auto 
 	operator()(std::size_t i,std::size_t j) const
 	{
@@ -120,7 +134,15 @@ namespace Krylov
   {
     return nCols;
   };
-
+  /*!
+   * Number of columns
+   * @return
+   */
+  auto
+ nonzero() const
+  {
+    return nnz;
+  };
 	/*!
    * Multiplication with a std::vector
    *
@@ -144,7 +166,14 @@ namespace Krylov
   template<class Vector>
   void extract_column(Vector &v,std::size_t const &index) const;
 
-	protected:
+	/*!
+   * Method to compute the transpose
+   *
+   * @return the transpose of the matrix
+   */
+   SparseMatrix transpose() const;
+
+	public:
 		std::size_t nRows;
 		std::size_t nCols;
 		std::size_t nnz;
@@ -193,7 +222,7 @@ SparseMatrix<Scalar>::operator*(Vector const &v) const
 template<typename Scalar>
 template <class Vector>
 void
-SparseMatrix<Scalar>:: extract_column(Vector &v,std::size_t const &index) const
+SparseMatrix<Scalar>::extract_column(Vector &v,std::size_t const &index) const
 {
 
 #pragma omp parallel for
@@ -201,6 +230,33 @@ SparseMatrix<Scalar>:: extract_column(Vector &v,std::size_t const &index) const
   {
     v[i] = this->operator()(i,index);
   }
+}
+
+template <typename Scalar>
+SparseMatrix<Scalar>
+SparseMatrix<Scalar>::transpose() const
+{
+	SparseMatrix<Scalar> res(nCols,nRows,nnz);
+	res.rowPtrs.resize(res.rowPtrs.size()+1);
+	for(std::size_t i = 0; i < nnz; i++)
+	{
+		res.rowPtrs[colInd[i] + 2]++;
+	}
+    for (std::size_t i = 2; i < res.rowPtrs.size(); ++i) 
+	{
+        res.rowPtrs[i] += res.rowPtrs[i - 1];
+    }
+
+    for (std::size_t i = 0; i < nRows; i++) {
+        for (std::size_t j = rowPtrs[i]; j < rowPtrs[i + 1]; ++j) {
+            const int new_index = res.rowPtrs[colInd[j] + 1]++;
+            res.buffer[new_index] = buffer[j];
+            res.colInd[new_index] = i;
+        }
+    }
+    res.rowPtrs.pop_back(); 
+
+    return res;
 }
 
 template <typename Scalar>

@@ -13,6 +13,12 @@
 #include <type_traits>
 #include <vector>
 #include <cmath>
+#include <map>
+#include <algorithm>
+#include "../direct_solvers/qr_solver.hpp"
+#include "../base_classes/sparse_matrix.hpp"
+
+
 // To avoid stupid warnings if I do not use openmp
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
@@ -29,22 +35,136 @@ template<typename SCALAR> class SpaiPreconditioner
 {
 public:
 	using Scalar=SCALAR;
+	using Matrix = Krylov::Matrix<Scalar>;
+	using Vector = Krylov::Vector<Scalar>;
+	using SparseMatrix = Krylov::SparseMatrix<Scalar>;
 
 	/*! Constructor takes a sparse matrix
 	 *  @tparam Matrix
-	 *  @param mat matrix from which we compute the inverse
+	 *  @param A matrix from which we compute the inverse
 	 */
-	template<class Matrix>
-	SpaiPreconditioner(Matrix const &A) 
-	{
+	template<class MatrixType>
+	SpaiPreconditioner(MatrixType const &A) : M(A.rows(),A.cols())
+	{	
+		for(std::size_t i = 0; i < A.rows(); i++)
+		{
+			pattern[i].push_back(i);
+		}
+		M.rowPtrs.resize(1);
 		compute(A);
 	}
 
-	template<class Matrix>
-	void compute(Matrix const &A)
-	{
-		std::cout << A << std::endl;
+	template<class MatrixType>
+	void compute(MatrixType const &A)
+	{	
+		std::vector<Vector> m(A.rows());
+#pragma omp parallel for
+		for(std::size_t k = 0; k < A.rows();k++)
+		{
+
+			std::vector<std::size_t> J = pattern[k];
+			double res = 1;
+			double tol = 1e-4;
+			while(1){	
+				std::vector<std::size_t> I;
+
+				for(std::size_t i = 0; i < A.rows(); i++)
+				{
+
+					for(std::size_t j = 0; j < J.size(); j++)
+					{
+						if(A(i,J[j]) && std::find(I.begin(),I.end(),i) == I.end()) I.push_back(i);
+					}
+				}
+
+				Vector reducedE_k(I.size());
+				Vector e_k(A.rows());
+				e_k[k] = 1;
+				for(std::size_t i = 0; i < I.size(); i++)
+				{
+					reducedE_k[i] = e_k[I[i]];
+				}	
+				Matrix reducedA(I.size(),J.size());
+				for(std::size_t i = 0; i < reducedA.rows(); i++)
+				{
+					for(std::size_t j = 0; j < reducedA.cols(); j++)
+					{
+						reducedA(i,j) = A(I[i],J[j]);
+					}
+				}
+
+				if(reducedA.rows() > A.rows())
+					break;
+
+				QRSolver<Scalar> qr(reducedA);
+
+
+				m[k] = qr.solve(reducedE_k);
+
+				Matrix AJ(A.rows(),J.size());
+				for(std::size_t i  = 0; i < A.rows(); i++)
+				{
+					for(std::size_t j = 0; j < J.size(); j++)
+					{
+						AJ(i,j) = A(i,J[j]);
+					}
+				}
+				Vector r = AJ * m[k] - e_k ;
+
+				res = r.norm();
+				
+				if(res < tol || m[k].size() >= A.nonzero() / (2 * m[k].size()))
+				{
+					pattern[k] = J;
+					break;
+				}
+					
+		
+				std::vector<std::size_t> L;
+				std::vector<std::size_t> Jnew;
+				for(std::size_t i = 0; i < r.size(); i++)
+				{
+						if(r[i] && std::find(J.begin(),J.end(),i) == J.end()) 
+							Jnew.push_back(i); 
+				}			
+				double p_j = r.norm();
+				double min = -1;
+				for(auto &j : Jnew)
+				{
+					Vector e_j(A.cols());
+					e_j[j] = 1;
+					Vector a_j(A.rows());
+					A.extract_column(a_j,j);
+						
+					double p_jnew = r.norm() - std::pow(r.dot(a_j),2)/(a_j.norm());
+					if(p_jnew < p_j)
+					{	
+						p_j	= p_jnew;
+						min = j;
+					}
+				}
+
+				J.push_back(min);
+				std::sort(J.begin(),J.end());
+			} 
+
+		}
+		for(std::size_t k = 0; k <  pattern.size(); k++)
+		{
+			std::vector<std::size_t> J = pattern[k];
+			Vector reducedM_k = m[k];
+			for(std::size_t i = 0; i < J.size(); i++)
+			{
+				M.colInd.push_back(J[i]);
+				M.buffer.push_back(reducedM_k[i]);
+				M.nnz++;
+			}
+			M.rowPtrs.push_back(M.nnz);
+		}
+
+		
 	}
+
 	/*!
 	 * solve method to apply the preconditioner 
 	 * @param v 
@@ -52,10 +172,11 @@ public:
 	 */
 	template<class Vector>
 	Vector solve(Vector const &v) const {
-		return v;
+		return M*v;
 	}
 protected:
-	std
+	std::map<std::size_t,std::vector<std::size_t>> pattern;
+	SparseMatrix M;
 };
 
 }//namespace Krylov

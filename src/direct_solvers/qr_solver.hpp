@@ -77,8 +77,8 @@ public:
 
     		z1 = qv[i] * Q;
     		Q = z1;
-		
-		}
+			}
+
   	R = Q * A;
   	Q = Q.transpose();
 	
@@ -106,9 +106,19 @@ protected:
 	Krylov::Vector<Scalar>
 	QRSolver<Scalar>::solve(Krylov::Vector<Scalar> const &b) const
 	{
+		
+		Matrix I(R.cols(),Q.rows());
+		for(std::size_t i = 0; i < R.cols(); i++)
+		{
+			for(std::size_t j = 0; j < Q.rows(); j++)
+			{
+				if(i == j) I(i,j) = 1;	
+			}
+		}
+		Krylov::Vector<Scalar> b_ =  I * Q.transpose() * b;
+		Krylov::Vector<Scalar> res(b_.size());
 
-		Krylov::Vector<Scalar> b_ = Q.transpose() * b;
-				Krylov::Vector<Scalar> res(b_.size());
+
 #pragma omp parallel for
 		for(std::size_t i = 0; i < b_.size(); i++)
 		{
