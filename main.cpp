@@ -10,7 +10,7 @@
 #include "./src/preconditioners/spai.hpp"
 #include "./src/direct_solvers/qr_solver.hpp"
 int main(){
- double n = 1000; 
+ double n = 100; 
 
  Krylov::SparseMatrix<double> A(n,n);
  Krylov::Matrix<double> B(n,n);
@@ -26,13 +26,15 @@ int main(){
 }
 
  Krylov::Vector<double> b = A * xe;
-
- Krylov::SpaiPreconditioner<double> spai(A.transpose());
+ double tol = 0.1;
+ Krylov::SpaiPreconditioner<double,Krylov::PATTERN::DYNAMIC> spaiD(A.transpose(),tol);
+ tol = 0.3;
+ Krylov::SpaiPreconditioner<double> spaiS(A.transpose(),tol);
  Krylov::IdentityPreconditioner<double> id;
  Krylov::DiagPreconditioner<double> diag(A);
 
  int res;
- double tol;
+
  int max_iter;
  
  tol = 1e-9;
@@ -55,11 +57,19 @@ int main(){
  x = 0 * x;
  tol = 1e-9;
  max_iter = 1000;
- res = BiCGStab(A,x,b,spai,max_iter,tol);
- std::cout << "Sparse Approximate Preconditioner: " << std::endl;
+ res = BiCGStab(A,x,b,spaiD,max_iter,tol);
+ std::cout << "Sparse Approximate Preconditioner (DYNAMIC): " << std::endl;
  std::cout << "Iterations: " << max_iter << std::endl;
  std::cout << "Residual: " << tol << std::endl;
  std::cout << "Error norm: " << (x-xe).norm() << std::endl;
 
+ x = 0 * x;
+ tol = 1e-9;
+ max_iter = 1000;
+ res = BiCGStab(A,x,b,spaiS,max_iter,tol);
+ std::cout << "Sparse Approximate Preconditioner (STATIC): " << std::endl;
+ std::cout << "Iterations: " << max_iter << std::endl;
+ std::cout << "Residual: " << tol << std::endl;
+ std::cout << "Error norm: " << (x-xe).norm() << std::endl;
  return 0;
 }
