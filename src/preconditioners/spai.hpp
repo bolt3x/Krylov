@@ -67,114 +67,24 @@ public:
 	}
 
 	template<class MatrixType>
-	void compute(MatrixType const &A,Scalar &tol)
-	{	
-		std::vector<Vector> m(A.rows());
-#pragma omp parallel for
-		for(std::size_t k = 0; k < A.rows();k++)
-		{
-
-			std::vector<std::size_t> J = pattern[k];
-			double res = 1;
-			while(1){	
-				std::vector<std::size_t> I;
-
-				for(std::size_t i = 0; i < A.rows(); i++)
-				{
-
-					for(std::size_t j = 0; j < J.size(); j++)
-					{
-						if(A(i,J[j]) && std::find(I.begin(),I.end(),i) == I.end()) I.push_back(i);
-					}
-				}
-
-				Vector reducedE_k(I.size());
-				Vector e_k(A.rows());
-				e_k[k] = 1;
-				for(std::size_t i = 0; i < I.size(); i++)
-				{
-					reducedE_k[i] = e_k[I[i]];
-				}	
-				Matrix reducedA(I.size(),J.size());
-				for(std::size_t i = 0; i < reducedA.rows(); i++)
-				{
-					for(std::size_t j = 0; j < reducedA.cols(); j++)
-					{
-						reducedA(i,j) = A(I[i],J[j]);
-					}
-				}
-
-				if(reducedA.rows() > A.rows())
-					break;
-
-				QRSolver<Scalar> qr(reducedA);
+	void compute(MatrixType const &A,Scalar &tol);
 
 
-				m[k] = qr.solve(reducedE_k);
+	/*!
+	 * this method is used in the dynamic pattern
+	 * case to update the pattern
+	 * @param A
+	 * @param J the pattern to be updated
+	 * @param r the residual is used to compute the indexes to be added to J
+	 */
+	template<class MatrixType>
+	void update(MatrixType const &A,std::vector<std::size_t> &J,Krylov::Vector<Scalar> const &r);
 
-				Matrix AJ(A.rows(),J.size());
-				for(std::size_t i  = 0; i < A.rows(); i++)
-				{
-					for(std::size_t j = 0; j < J.size(); j++)
-					{
-						AJ(i,j) = A(i,J[j]);
-					}
-				}
-				Vector r = AJ * m[k] - e_k ;
-
-				res = r.norm();
-				
-				if(res < tol || m[k].size() >= A.nonzero() / (2 * m[k].size()) || Sparsity == PATTERN::STATIC)
-				{
-					tol = res;
-					pattern[k] = J;
-					break;
-				}
-					
-		
-				std::vector<std::size_t> L;
-				std::vector<std::size_t> Jnew;
-				for(std::size_t i = 0; i < r.size(); i++)
-				{
-						if(r[i] && std::find(J.begin(),J.end(),i) == J.end()) 
-							Jnew.push_back(i); 
-				}			
-				double p_j = r.norm();
-				double min = -1;
-				for(auto &j : Jnew)
-				{
-					Vector e_j(A.cols());
-					e_j[j] = 1;
-					Vector a_j(A.rows());
-					A.extract_column(a_j,j);
-						
-					double p_jnew = r.norm() - std::pow(r.dot(a_j),2)/(a_j.norm());
-					if(p_jnew < p_j)
-					{	
-						p_j	= p_jnew;
-						min = j;
-					}
-				}
-
-				J.push_back(min);
-				std::sort(J.begin(),J.end());
-			} 
-
-		}
-		for(std::size_t k = 0; k <  pattern.size(); k++)
-		{
-			std::vector<std::size_t> J = pattern[k];
-			Vector reducedM_k = m[k];
-			for(std::size_t i = 0; i < J.size(); i++)
-			{
-				M.colInd.push_back(J[i]);
-				M.buffer.push_back(reducedM_k[i]);
-				M.nnz++;
-			}
-			M.rowPtrs.push_back(M.nnz);
-		}
-		
-	}
+	/*! this method computes M from
+	 * a vector of vectors m
+	 * @param m a std::vector of Vectors
+	 */
+	void build(std::vector<Vector> const &m);
 
 	/*!
 	 * solve method to apply the preconditioner 
@@ -183,6 +93,12 @@ public:
 	 */
 	template<class Vector>
 	Vector solve(Vector const &v) const { return M*v; }
+
+	/*!
+	 * this method return the computed 
+	 * preconditioner M
+	 */
+	SparseMatrix getM() const {return M;}
 
 	/*!
 	 * this method sets the sparsity pattern
@@ -230,6 +146,158 @@ SpaiPreconditioner<Scalar,Sparsity>::diagPattern(std::size_t const &d)
 	for(std::size_t i = 0; i < d; i++)
 	{
 		pattern[i].push_back(i);
+	}
+}
+template<typename Scalar,PATTERN Sparsity>
+template<class MatrixType>
+void
+SpaiPreconditioner<Scalar,Sparsity>::compute(MatrixType const &A,Scalar &tol)
+{	
+	std::vector<Vector> m(A.rows());
+#pragma omp parallel for
+	for(std::size_t k = 0; k < A.rows();k++)
+	{
+
+		std::vector<std::size_t> J = pattern[k];
+		double res = 1;
+		while(1)
+		{	
+			std::vector<std::size_t> I;
+
+			for(std::size_t i = 0; i < A.rows(); i++)
+			{
+				for(std::size_t j = 0; j < J.size(); j++)
+				{
+					if(A(i,J[j]) && std::find(I.begin(),I.end(),i) == I.end()) I.push_back(i);
+				}
+			}
+
+			
+			Vector reducedE_k(I.size());
+			Vector e_k(A.rows());
+			e_k[k] = 1;
+			for(std::size_t i = 0; i < I.size(); i++)
+			{
+				reducedE_k[i] = e_k[I[i]];
+			}	
+			Matrix reducedA(I.size(),J.size());
+			for(std::size_t i = 0; i < reducedA.rows(); i++)
+			{
+				for(std::size_t j = 0; j < reducedA.cols(); j++)
+				{
+					reducedA(i,j) = A(I[i],J[j]);
+				}
+			}
+			
+			if(reducedA.rows() > A.rows())
+				break;
+			
+
+			if(reducedA.rows() > 1)
+			{
+				QRSolver<Scalar> qr(reducedA);
+				
+				m[k] = qr.solve(reducedE_k);
+				
+			}
+			
+			if(reducedA.rows() == 1)
+			{
+				m[k] = Vector(1,0);
+				for(std::size_t i = 0; i < m[k].size(); i++)
+				{
+					if(reducedA(0,i))
+					{
+						m[k][0] = 1/reducedA(0,i);
+					}
+				}
+				break;
+			}
+			Matrix AJ(A.rows(),J.size());
+			for(std::size_t i  = 0; i < A.rows(); i++)
+			{
+				for(std::size_t j = 0; j < J.size(); j++)
+				{
+					AJ(i,j) = A(i,J[j]);
+				}
+			}
+			Vector r = AJ * m[k] - e_k ;
+
+			res = r.norm();
+	
+			if(res < tol || m[k].size() >= A.nonzero() / A.rows() || Sparsity == PATTERN::STATIC)
+			{
+				
+				pattern[k] = J;
+			
+				break;
+			}
+
+			update(A,J,r);
+			
+		}
+		
+	}
+
+	build(m);
+		
+}
+
+template<typename Scalar,PATTERN Sparsity>
+template<class MatrixType>
+void
+SpaiPreconditioner<Scalar,Sparsity>::update(MatrixType const &A,std::vector<std::size_t> &J,Vector const &r)
+{
+	std::vector<std::size_t> L;
+	std::vector<std::size_t> Jnew;
+	for(std::size_t i = 0; i < r.size(); i++)
+	{
+		if(r[i] && std::find(J.begin(),J.end(),i) == J.end()) 		
+			Jnew.push_back(i); 
+	}			
+	double p_j = r.norm();
+	double min = -1;
+	for(auto &j : Jnew)
+	{
+		Vector e_j(A.cols());
+		e_j[j] = 1;
+
+		double p_jnew = r.norm() - std::pow(r.dot(A*e_j),2)/((A*e_j).norm());
+		
+		if(p_jnew < p_j)
+		{	
+			p_j	= p_jnew;
+			min = j;
+		}
+		
+	}
+	
+	J.push_back(min);
+	std::sort(J.begin(),J.end());
+	
+} 
+
+template<typename Scalar,PATTERN Sparsity>
+void
+SpaiPreconditioner<Scalar,Sparsity>::build(std::vector<Vector> const &m)
+{		
+	
+	for(std::size_t k = 0; k <  pattern.size(); k++)
+	{
+		std::vector<std::size_t> J = pattern[k];
+		Vector reducedM_k = m[k];
+		
+		for(std::size_t i = 0; i < J.size(); i++)
+		{
+			M.colInd.push_back(J[i]);
+			if(!std::isnan(reducedM_k[i]))
+				M.buffer.push_back(reducedM_k[i]);
+			else 
+				M.buffer.push_back(1);
+			M.nnz++;
+		}
+		M.rowPtrs.push_back(M.nnz);
+		
 	}
 }
 

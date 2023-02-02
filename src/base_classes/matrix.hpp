@@ -176,6 +176,26 @@ public:
   template<class Vector>
   void extract_column(Vector &v,std::size_t const &index) const;
 
+  /*!
+   * Method to extract a row
+   *
+   * @tparam the row that will be copied 
+   * @param v vector where the row is stored
+   * @param index the row index
+   */
+  template<class Vector>
+  void extract_row(Vector &v,std::size_t const &index) const;  
+
+   /*!
+   * Method to set a rpw
+   *
+   * @tparam the row that will be set
+   * @param v vector from where the row is copied
+   * @param index the row index
+   */
+  template<class Vector>
+  void set_row(Vector &v,std::size_t const &index);   
+
   /*! 
    * Method to compute a minpr
    *
@@ -312,6 +332,32 @@ Matrix<Scalar,ORDER>::extract_column(Vector &v,std::size_t const &index) const
   for(std::size_t i = 0; i < nRows; i++)
   {
     v[i] = this->operator()(i,index);
+  }
+}
+
+template<typename Scalar, ORDERING ORDER>
+template <class Vector>
+void
+Matrix<Scalar,ORDER>::extract_row(Vector &v,std::size_t const &index) const
+{
+
+#pragma omp parallel for
+  for(std::size_t j = 0; j < nCols; j++)
+  {
+    v[j] = this->operator()(index,j);
+  }
+}
+
+template<typename Scalar, ORDERING ORDER>
+template <class Vector>
+void
+Matrix<Scalar,ORDER>::set_row(Vector &v,std::size_t const &index) 
+{
+
+#pragma omp parallel for
+  for(std::size_t j = 0; j < nCols; j++)
+  {
+    this->operator()(index,j) = v[j];
   }
 }
 

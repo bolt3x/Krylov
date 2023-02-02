@@ -1,0 +1,3 @@
+- Commentare e ordinare QRSolver e Diag
+- Check sulla dimensioni matrice / vettore
+- MatrixMarket readers

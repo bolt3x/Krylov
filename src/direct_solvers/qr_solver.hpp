@@ -39,7 +39,7 @@ public:
 	{
 		std::size_t m = A.rows();
 		std::size_t n = A.cols();
-
+	
 		std::vector<Matrix> qv(m);
 		
 		Matrix z(m,n);
@@ -48,7 +48,7 @@ public:
 				z(i,j) = A(i,j);
 		
 		Matrix z1;
-
+	
 		for(std::size_t k = 0; k < n && k < m -1; k++)
 		{
 			Vector e(m), x(m);

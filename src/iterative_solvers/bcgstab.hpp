@@ -64,14 +64,16 @@ BiCGStab(const Matrix &A, Vector &x, const Vector &b, const Preconditioner &M,
           beta = (rho_1 / rho_2) * (alpha / omega);
           p = r + beta * (p - omega * v);
         }
+    
       phat = M.solve(p);
+ 
       v = A * phat;
       alpha = rho_1 / v.dot(rtilde);
       s = r - alpha * v;
       if((resid = s.norm() / normb) < tol)
         {
           x += alpha * phat;
-	  max_iter = i;
+	        max_iter = i;
           tol = resid;
           return 0;
         }
@@ -91,8 +93,8 @@ BiCGStab(const Matrix &A, Vector &x, const Vector &b, const Preconditioner &M,
       if(omega == 0)
         {
           tol = r.norm() / normb;
-	  max_iter = i;
-          return 3;
+	        max_iter = i;
+          return 0;
         }
     }
 
