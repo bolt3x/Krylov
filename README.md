@@ -32,9 +32,9 @@ make test=bcgstab
 ```
 This will generate a test case that uses the BiCGStab solver
 ```
-make test=cgs
+make test=chebyshev
 ```
-This will generate a test case that uses the CGS solver
+This will generate a test case that uses the Chebyshev solver (unstable)
 
 If only the make command is typed, the bcgstab test case will be generated
 
