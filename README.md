@@ -18,6 +18,7 @@ to use it in your code compile it with the flag
 ## Test Cases
 You can test the library by using the make command and running the **test** file 
 that will be located in the test directory.
+
 Various test cases can be generated:
 
 ```
@@ -38,10 +39,13 @@ If only the make command is typed, the bcgstab test case will be generated
 ## The Sparse Approximate Inverse Preconditioner 
 
 After running the **test** file an **images** folder will be created in the same directory.
+
 Here there will be 3 png files representing:
 
 **original.png** the pattern of the original matrix
+
 **dynamic.png** the pattern of the sparse approximate inverse with dynamic pattern 
+
 **static.png** the pattern of the sparse approximate inverse with static pattern
 # Example 
 ## matrix file: https://math.nist.gov/MatrixMarket/data/Harwell-Boeing/lanpro/nos4.html
