@@ -6,11 +6,11 @@
 
 Clone the repository:
 ```
-git git@github.com:bolt3x/Krylov.git
+git clone git@github.com:bolt3x/Krylov.git
 ```
 
 Inside the **src** folder there is the **Krylov.hpp** header,
-to use it in your code compile with
+to use it in your code compile it with the flag
 ```
 -I./path/to/krylov/header
 ```
@@ -32,6 +32,8 @@ This will generate a test case that uses the BiCGStab solver
 make test=cgs
 ```
 This will generate a test case that uses the CGS solver
+
+If only the make command is typed, the bcgstab test case will be generated
 
 ## The Sparse Approximate Inverse Preconditioner 
 
