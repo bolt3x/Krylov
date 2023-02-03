@@ -31,7 +31,8 @@ public:
 
 	/*! Constructor doesn't take anything
 	 */
-	IdentityPreconditioner() = default;
+	template<class Matrix>
+	IdentityPreconditioner(const Matrix &A){}
 
 	/*!
 	 * solve method to apply the preconditioner

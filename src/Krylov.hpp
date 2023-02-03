@@ -9,6 +9,7 @@
 //iterative solvers
 #include "./iterative_solvers/cg.hpp"
 #include "./iterative_solvers/bcgstab.hpp"
+#include "./iterative_solvers/chebyshev.hpp"
 
 //preconditioners
 #include "./preconditioners/diag.hpp"

@@ -161,7 +161,7 @@ public:
   /*!
    * Multiplication with another Matrix
    *
-   * @param matrix a vector
+   * @param matrix a matrix
    * @return The result of A*B
    */
   Matrix operator*(Matrix const &B) const;

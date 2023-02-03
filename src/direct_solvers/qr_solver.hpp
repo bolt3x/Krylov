@@ -39,8 +39,8 @@ public:
 
 	Vector solve(Vector const &b) const;
 
-template<class VectorType>
-Matrix householder(VectorType const &v) const;
+	template<class VectorType>
+	Matrix householder(VectorType const &v) const;
 
 	Matrix getQ()
 	{
@@ -51,10 +51,12 @@ Matrix householder(VectorType const &v) const;
 	{
 		return R;
 	}
+
 protected:
 	Matrix Q;
 	Matrix R;
 };
+
 
 template<typename Scalar>
 template<class MatrixType>

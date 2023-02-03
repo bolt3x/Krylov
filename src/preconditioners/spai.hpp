@@ -49,9 +49,10 @@ public:
 	/*! Constructor takes a sparse matrix
 	 *  @tparam Matrix
 	 *  @param A matrix from which we compute the inverse
+	 *  @param tol this will be used to generate the pattern
 	 */
 	template<class MatrixType>
-	SpaiPreconditioner(MatrixType const &A,Scalar &tol) : M(A.rows(),A.cols())
+	SpaiPreconditioner(MatrixType const &A) : M(A.rows(),A.cols())
 	{	
 
 		if constexpr(Sparsity == PATTERN::STATIC)
@@ -118,6 +119,7 @@ public:
 protected:
 	std::map<std::size_t,std::vector<std::size_t>> pattern;
 	SparseMatrix M;
+	Scalar tol = 0.2;
 };
 
 template<typename Scalar,PATTERN Sparsity>
@@ -228,7 +230,7 @@ SpaiPreconditioner<Scalar,Sparsity>::compute(MatrixType const &A,Scalar &tol)
 
 			res = r.norm();
 	
-			if(res < tol || m[k].size() >= std::sqrt(A.nonzero() / A.rows()) || Sparsity == PATTERN::STATIC)
+			if(res < tol || m[k].size() >= A.nonzero() / A.rows() || Sparsity == PATTERN::STATIC)
 			{
 				
 				pattern[k] = J;

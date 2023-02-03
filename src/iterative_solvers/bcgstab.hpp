@@ -20,7 +20,7 @@
 //*****************************************************************
 
 #ifndef HH_BICGSTAB_HH
-#define HH_BISTAB_HH
+#define HH_BICGSTAB_HH
 
 namespace Krylov
 {

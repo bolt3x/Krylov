@@ -155,7 +155,13 @@ namespace Krylov
    */
 	template<class Vector>
   Vector operator*(Vector const &v) const;
-
+  /*!
+   * Multiplication with another Sparse Matrix
+   *
+   * @param matrix a sparse matrix
+   * @return The result of A*B
+   */
+  SparseMatrix operator*(SparseMatrix const &B) const;
   /*!
    * Method to extract a column
    *
@@ -218,6 +224,22 @@ SparseMatrix<Scalar>::operator*(Vector const &v) const
 	}
 	return res;
 }
+
+template<typename Scalar>
+SparseMatrix<Scalar>
+SparseMatrix<Scalar>::operator*(SparseMatrix<Scalar> const &B) const
+{
+  SparseMatrix<Scalar> C(nRows,B.cols());
+  
+for(std::size_t i = 0; i < nRows; i++)
+    for(std::size_t j = 0; j < B.cols(); j++)
+    for(std::size_t k = 0; k < nCols; k++)
+		if(this->operator()(i,k) && B(k,j))
+          C.set(i,j) += this->operator()(i,k) * B(k,j);
+  
+  return C;
+}
+
 
 template<typename Scalar>
 template <class Vector>

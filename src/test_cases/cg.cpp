@@ -11,10 +11,10 @@ int main(){
  
  Krylov::Vector<double> b = A * xe;
  double tol = 0.1;
- Krylov::SpaiPreconditioner<double,Krylov::PATTERN::DYNAMIC> spaiD(A,tol);
+ Krylov::SpaiPreconditioner<double,Krylov::PATTERN::DYNAMIC> spaiD(A);
  tol = 0.3;
- Krylov::SpaiPreconditioner<double> spaiS(A,tol);
- Krylov::IdentityPreconditioner<double> id;
+ Krylov::SpaiPreconditioner<double> spaiS(A);
+ Krylov::IdentityPreconditioner<double> id(A);
  Krylov::DiagPreconditioner<double> diag(A);
  int res;
  int max_iter;
