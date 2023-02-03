@@ -1,6 +1,6 @@
 # Krylov
 ## by Valerio Fassi
-### Krylov is a header only library inspired from Eigen.
+### Krylov is a header only library inspired by Eigen.
 
 ## How to use
 
@@ -35,8 +35,8 @@ This will generate a test case that uses the CGS solver
 
 ## The Sparse Approximate Inverse Preconditioner 
 
-After running the **test** file an images folder will be created.
-Here there will be 3 png file representing:
+After running the **test** file an **images** folder will be created in the same directory.
+Here there will be 3 png files representing:
 
 **original.png** the pattern of the original matrix
 **dynamic.png** the pattern of the sparse approximate inverse with dynamic pattern 
