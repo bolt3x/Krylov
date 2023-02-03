@@ -35,7 +35,7 @@ enum class PATTERN
 /*!
  * An identity "preconditioner" class
  * @tparam Scalar element
- * @tparam Vector The vector class to "solve" with
+ * @tparam Pattern how the pattern of the inverse will be construtcted
  */
 
 template<typename SCALAR,PATTERN Sparsity = PATTERN::STATIC> class SpaiPreconditioner
@@ -49,7 +49,6 @@ public:
 	/*! Constructor takes a sparse matrix
 	 *  @tparam Matrix
 	 *  @param A matrix from which we compute the inverse
-	 *  @param tol this will be used to generate the pattern
 	 */
 	template<class MatrixType>
 	SpaiPreconditioner(MatrixType const &A) : M(A.rows(),A.cols())
