@@ -1,8 +1,8 @@
 # Krylov
-##by Valerio Fassi
-###Krylov is a header only library inspired from Eigen.
+## by Valerio Fassi
+### Krylov is a header only library inspired from Eigen.
 
-##How to use
+## How to use
 
 Clone the repository:
 ```
@@ -43,10 +43,13 @@ Here there will be 3 png file representing:
 **static.png** the pattern of the sparse approximate inverse with static pattern
 #Example
 using https://math.nist.gov/MatrixMarket/data/Harwell-Boeing/lanpro/nos4.html
+**ORIGINAL MATRIX**
 ![original](https://user-images.githubusercontent.com/103378889/216479768-a5505586-5ec3-4e38-9fbf-e4c1109d1f6c.png)
+**SPAI WITH DYNAMIC PATTERN**
 ![dynamic](https://user-images.githubusercontent.com/103378889/216479780-e0870163-d931-4700-a348-004d7f8ad3fc.png)
+**SPAI WITH STATIC PATTERN**
 ![static](https://user-images.githubusercontent.com/103378889/216479790-1f47a430-a595-457f-9ad3-4d486583750f.png)
 
-##Caveat
+## Caveat
 The sparse approximate inverse preconditioner with **DYNAMIC** pattern is not optimized
 so at the moment the use of the **STATIC** version is suggested.
