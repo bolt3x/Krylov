@@ -16,7 +16,7 @@ to use it in your code compile it with the flag
 ```
 
 ## Test Cases
-You can test the library by using the make command and running the **test** file 
+You can test the library by using the **make** command and running the executable file 
 that will be located in the test directory.
 
 Various test cases can be generated:
