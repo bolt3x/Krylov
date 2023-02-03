@@ -35,37 +35,61 @@ public:
 	}
 
 	template<class MatrixType>
-	void compute(MatrixType const &A)
+	void compute(MatrixType const &A);
+
+	Vector solve(Vector const &b) const;
+
+template<class VectorType>
+Matrix householder(VectorType const &v) const;
+
+	Matrix getQ()
 	{
-		std::size_t m = A.rows();
-		std::size_t n = A.cols();
-	
-		std::vector<Matrix> qv(m);
-		
-		Matrix z(m,n);
-		for(std::size_t i = 0; i < m; i++)
-			for(std::size_t j = 0; j < n; j++)
-				z(i,j) = A(i,j);
-		
-		Matrix z1;
-	
-		for(std::size_t k = 0; k < n && k < m -1; k++)
-		{
-			Vector e(m), x(m);
-			Scalar a;
-			z1 = z.compute_minor(k);
-	
-			z1.extract_column(x,k);
+		return Q;
+	}
 
-			a = x.norm();
-			if(A(k,k) > 0) a = -a;
+	Matrix getR()
+	{
+		return R;
+	}
+protected:
+	Matrix Q;
+	Matrix R;
+};
 
-			for(std::size_t i = 0; i < e.size(); i++)
-				e[i] = i == k ? 1 : 0;
+template<typename Scalar>
+template<class MatrixType>
+void
+QRSolver<Scalar>::compute(MatrixType const &A)
+{
+	std::size_t m = A.rows();
+	std::size_t n = A.cols();
+	
+	std::vector<Matrix> qv(m);
+		
+	Matrix z(m,n);
+	for(std::size_t i = 0; i < m; i++)
+		for(std::size_t j = 0; j < n; j++)
+			z(i,j) = A(i,j);
+		
+	Matrix z1;
+	
+	for(std::size_t k = 0; k < n && k < m -1; k++)
+	{
+		Vector e(m), x(m);
+		Scalar a;
+		z1 = z.compute_minor(k);
+
+		z1.extract_column(x,k);
+
+		a = x.norm();
+		if(A(k,k) > 0) a = -a;
+
+		for(std::size_t i = 0; i < e.size(); i++)
+			e[i] = i == k ? 1 : 0;
 			
-			e = x + a * e;
+		e = x + a * e;
 			
-			Scalar enorm = e.norm();
+		Scalar enorm = e.norm();
 			for(std::size_t i = 0; i < e.size(); i++)
 				e[i] = e[i] / enorm;
 			qv[k] = householder(e);
@@ -83,40 +107,22 @@ public:
   	Q = Q.transpose();
 	
 }
-
-	Vector solve(Vector const &b) const;
-
-	template<class VectorType>
-	Matrix householder(VectorType const &v) const;
-
-	Matrix getQ()
-	{
-		return Q;
-	}
-
-	Matrix getR()
-	{
-		return R;
-	}
-protected:
-	Matrix Q;
-	Matrix R;
-};
-	template<typename Scalar>
-	Krylov::Vector<Scalar>
-	QRSolver<Scalar>::solve(Krylov::Vector<Scalar> const &b) const
-	{
+	
+template<typename Scalar>
+Krylov::Vector<Scalar>
+QRSolver<Scalar>::solve(Krylov::Vector<Scalar> const &b) const
+{
 		
-		Matrix I(R.cols(),Q.rows());
-		for(std::size_t i = 0; i < R.cols(); i++)
+	Matrix I(R.cols(),Q.rows());
+	for(std::size_t i = 0; i < R.cols(); i++)
+	{
+		for(std::size_t j = 0; j < Q.rows(); j++)
 		{
-			for(std::size_t j = 0; j < Q.rows(); j++)
-			{
-				if(i == j) I(i,j) = 1;	
-			}
+			if(i == j) I(i,j) = 1;	
 		}
-		Krylov::Vector<Scalar> b_ =  I * Q.transpose() * b;
-		Krylov::Vector<Scalar> res(b_.size());
+	}
+	Krylov::Vector<Scalar> b_ =  I * Q.transpose() * b;
+	Krylov::Vector<Scalar> res(b_.size());
 
 
 #pragma omp parallel for
@@ -136,8 +142,9 @@ protected:
 		}
 		return res;
 	}
-	template<typename Scalar>
-	template<class VectorType>
+
+template<typename Scalar>
+template<class VectorType>
 	Krylov::Matrix<Scalar>
 	QRSolver<Scalar>::householder(VectorType const &v) const
 	{	

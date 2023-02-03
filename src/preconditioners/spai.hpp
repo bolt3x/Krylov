@@ -213,6 +213,9 @@ SpaiPreconditioner<Scalar,Sparsity>::compute(MatrixType const &A,Scalar &tol)
 				}
 				break;
 			}
+			if(!reducedA.rows() || !reducedA.cols())
+				continue;
+
 			Matrix AJ(A.rows(),J.size());
 			for(std::size_t i  = 0; i < A.rows(); i++)
 			{
@@ -225,7 +228,7 @@ SpaiPreconditioner<Scalar,Sparsity>::compute(MatrixType const &A,Scalar &tol)
 
 			res = r.norm();
 	
-			if(res < tol || m[k].size() >= A.nonzero() / A.rows() || Sparsity == PATTERN::STATIC)
+			if(res < tol || m[k].size() >= std::sqrt(A.nonzero() / A.rows()) || Sparsity == PATTERN::STATIC)
 			{
 				
 				pattern[k] = J;
