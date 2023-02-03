@@ -15,8 +15,8 @@ to use it in your code compile with
 -I./path/to/krylov/header
 ```
 
-##Test Cases
-You can test the library by using the make command and running that **test** file 
+## Test Cases
+You can test the library by using the make command and running the **test** file 
 that will be located in the test directory.
 Various test cases can be generated:
 
@@ -33,7 +33,7 @@ make test=cgs
 ```
 This will generate a test case that uses the CGS solver
 
-##The Sparse Approximate Inverse Preconditioner 
+## The Sparse Approximate Inverse Preconditioner 
 
 After running the **test** file an images folder will be created.
 Here there will be 3 png file representing:
@@ -41,8 +41,9 @@ Here there will be 3 png file representing:
 **original.png** the pattern of the original matrix
 **dynamic.png** the pattern of the sparse approximate inverse with dynamic pattern 
 **static.png** the pattern of the sparse approximate inverse with static pattern
-#Example
-using https://math.nist.gov/MatrixMarket/data/Harwell-Boeing/lanpro/nos4.html
+# Example 
+## matrix file: https://math.nist.gov/MatrixMarket/data/Harwell-Boeing/lanpro/nos4.html
+
 **ORIGINAL MATRIX**
 ![original](https://user-images.githubusercontent.com/103378889/216479768-a5505586-5ec3-4e38-9fbf-e4c1109d1f6c.png)
 **SPAI WITH DYNAMIC PATTERN**
