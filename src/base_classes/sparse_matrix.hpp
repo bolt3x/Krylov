@@ -54,68 +54,10 @@ namespace Krylov
   	}	
 
 	auto 
-	operator()(std::size_t i,std::size_t j) const
-	{
-	
-		int pos = rowPtrs[i];	
-		int currCol = -1;
-		for (; pos < rowPtrs[i + 1]; pos++) 
-		{
-			
-			currCol = colInd[pos];
-			if(currCol == j)
-				return buffer[pos];
-		
-		}
-		return Scalar();
-	}
+	operator()(std::size_t i,std::size_t j) const;
 
-	auto &
-	set(std::size_t i,std::size_t j){
-		
-		int pos = rowPtrs[i] - 1 ;
-		int currCol = -1;
-		
-		for (; pos < rowPtrs[i + 1] - 1 ; pos++) 
-		{
-			
-			currCol = colInd[pos];
-		
-			if (currCol > j) 
-			{
-				break;
-			}
-		}
-
-
-		if (currCol != j) 
-		{
-			for (std::size_t row = i+1; row <= nRows; row++) 
-			{
-				rowPtrs[row] += 1;
-			}
-
-			if (nnz == 0)
-			{	
-				colInd.push_back(j);
-				buffer.resize(1);
-				nnz += 1;
-				return buffer[0];
-			} 
-			else 
-			{
-				buffer.insert(buffer.begin() + pos + 1, 0);
-				colInd.insert(colInd.begin() + pos + 1, j);
-				nnz +=1;
-				return buffer[pos + 1];
-			}
-		} 
-		else 
-		{
-			return buffer[pos + 1];
-		}
-	}
-
+	auto&
+	set(std::size_t i,std::size_t j);
 	/*!
    * Number of rows
    * @return
@@ -203,6 +145,71 @@ std::ostream &operator<<(std::ostream &out, SparseMatrix<Scalar> const &mat);
  * Definitions
  * ***************************************************************************
  */
+
+template <typename Scalar>
+auto 
+SparseMatrix<Scalar>::operator()(std::size_t i,std::size_t j) const
+	{
+		int pos = rowPtrs[i];	
+		int currCol = -1;
+		for (; pos < rowPtrs[i + 1]; pos++) 
+		{	
+			
+			currCol = colInd[pos];
+			if(currCol == j)
+				return buffer[pos];
+		
+		}
+		return Scalar();
+	}
+
+template <typename Scalar>
+auto&
+SparseMatrix<Scalar>::set(std::size_t i,std::size_t j)
+{
+		
+		int pos = rowPtrs[i] - 1 ;
+		int currCol = -1;
+		
+		for (; pos < rowPtrs[i + 1] - 1 ; pos++) 
+		{
+			
+			currCol = colInd[pos];
+		
+			if (currCol > j) 
+			{
+				break;
+			}
+		}
+
+
+		if (currCol != j) 
+		{
+			for (std::size_t row = i+1; row <= nRows; row++) 
+			{
+				rowPtrs[row] += 1;
+			}
+
+			if (nnz == 0)
+			{	
+				colInd.push_back(j);
+				buffer.resize(1);
+				nnz += 1;
+				return buffer[0];
+			} 
+			else 
+			{
+				buffer.insert(buffer.begin() + pos + 1, 0);
+				colInd.insert(colInd.begin() + pos + 1, j);
+				nnz +=1;
+				return buffer[pos + 1];
+			}
+		} 
+		else 
+		{
+			return buffer[pos + 1];
+		}
+	}
 
 template <typename Scalar>
 template<class Vector>
