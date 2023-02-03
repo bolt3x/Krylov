@@ -15,6 +15,8 @@ to use it in your code include it and compile with the flag
 -I./path/to/krylov/header
 ```
 
+**The c++ standard should be set to 17 or higher.**
+
 ## Test Cases
 You can test the library by using the **make** command and running the executable file 
 that will be located in the test directory.
