@@ -65,3 +65,32 @@ Here there will be 3 png files representing:
 ## Caveat
 The sparse approximate inverse preconditioner with **DYNAMIC** pattern is not optimized
 so at the moment the use of the **STATIC** version is suggested.
+
+## What's inside the library
+
+The library contains:
+
+- 3 base classes:
+
+**Matrix** / **SparseMatrix** / **Vector**
+
+- 3 iterative solvers:
+
+**Conjugate Gradient (CG)** / **Biconjugate Gradient Stabilized (BiCGStab)** / **Chebyshev iteration (Chebyshev)**
+
+- 2 (or 3) preconditioners:
+
+**Diagonal Preconditioner** / **Sparse Approximate Inverse Preconditioner (Both DYNAMIC and STATIC)**
+
+- 1 direct solver:
+
+**QR Solver**
+
+- 2 methods to compute max and min eigenvalues
+
+**Power method** / **Inverse Power Method**
+
+- 2 utilities
+
+**Matrix Market file reader** / **Sparse Matrix Pattern Plotter**
+
