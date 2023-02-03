@@ -31,12 +31,12 @@ int main(){
  Krylov::Vector<double> v_min(n,1);
  res = InversePower(A,a_min,v_min,Krylov::CG,id,max_iter,tol);
  
- std::cout << a_min << " " << a_max << std::endl;
  tol = 1e-9;
  max_iter = 2000;
  res = Chebyshev(A,x,b,id,max_iter,tol,a_min,a_max);
 
  std::cout << std::endl << "-------------------------" << std::endl;
+ std::cout << "Computed extreme eigenvalues: " << a_min << ", " << a_max << std::endl;
  std::cout << "Identity Preconditioner" << std::endl;
  std::cout << "Iterations: " << max_iter << std::endl;
  std::cout << "Residual: " << tol << std::endl;

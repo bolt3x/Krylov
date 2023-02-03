@@ -25,7 +25,7 @@ int main(){
  res = BiCGStab(A,x,b,id,max_iter,tol);
 
  std::cout << std::endl << "-------------------------" << std::endl;
- std::cout << "Identity Preconditioner" << std::endl;
+ std::cout << "No Preconditioner" << std::endl;
  std::cout << "Iterations: " << max_iter << std::endl;
  std::cout << "Residual: " << tol << std::endl;
  std::cout << "Error norm: " << (x-xe).norm() << std::endl;

@@ -1,7 +1,7 @@
 //*****************************************************************
 // Iterative template routine -- Power Method
 //
-// Power method is used to compute the biggest in modulus 
+// Power method is used to compute the biggest 
 // eigenvalue of A
 //
 // The return value indicates convergence within max_iter (input)

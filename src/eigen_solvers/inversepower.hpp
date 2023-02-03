@@ -1,8 +1,8 @@
 //*****************************************************************
 // Iterative template routine -- Power Method
 //
-// Inverse Power method is used to compute the smallest(or the closest to a given shift) 
-// in modulus eigenvalue of A
+// Inverse Power method is used to compute the smallest 
+// eigenvalue of A
 //
 // The return value indicates convergence within max_iter (input)
 // iterations (0), or no convergence within max_iter iterations (1).
