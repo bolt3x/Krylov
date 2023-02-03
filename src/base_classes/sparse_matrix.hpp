@@ -125,8 +125,8 @@ namespace Krylov
 		std::size_t nRows;
 		std::size_t nCols;
 		std::size_t nnz;
-		std::vector<int> rowPtrs;
-		std::vector<int> colInd;
+		std::vector<std::size_t> rowPtrs;
+		std::vector<std::size_t> colInd;
 		std::vector<Scalar> buffer;
 };
 /*!
@@ -150,8 +150,8 @@ template <typename Scalar>
 auto 
 SparseMatrix<Scalar>::operator()(std::size_t i,std::size_t j) const
 	{
-		int pos = rowPtrs[i];	
-		int currCol = -1;
+		std::size_t pos = rowPtrs[i];	
+		std::size_t currCol;
 		for (; pos < rowPtrs[i + 1]; pos++) 
 		{	
 			
@@ -168,8 +168,8 @@ auto&
 SparseMatrix<Scalar>::set(std::size_t i,std::size_t j)
 {
 		
-		int pos = rowPtrs[i] - 1 ;
-		int currCol = -1;
+		std::size_t pos = rowPtrs[i] - 1 ;
+		std::size_t currCol;
 		
 		for (; pos < rowPtrs[i + 1] - 1 ; pos++) 
 		{

@@ -33,13 +33,13 @@ SparseMatrix<Scalar> readCSRMatrix(const std::string &filename)
 
   // Read dimensions
   std::stringstream ss(line);
-  int rows, cols, nonzeros;
+  std::size_t rows, cols, nonzeros;
   ss >> rows >> cols >> nonzeros;
 
   SparseMatrix<Scalar> matrix(rows,cols,nonzeros + nonzeros * symmetric);
 
 	while (std::getline(file, line)) {
-    int row, col;
+    std::size_t row, col;
     double value;
     std::stringstream ss(line);
     ss >> row >> col >> value;

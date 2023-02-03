@@ -20,7 +20,7 @@ DEPS := $(OBJS:.o=.d)
 
 # The -MMD and -MP flags together generate Makefiles for us!
 # These files will have .d instead of .o as the output.
-CPPFLAGS := -I./src -MMD -MP -std=c++2a -fopenmp
+CPPFLAGS := -I./src -MMD -MP -Wall -std=c++2a -fopenmp
 
 
 # The final build step.

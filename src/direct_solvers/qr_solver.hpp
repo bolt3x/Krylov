@@ -99,7 +99,7 @@ QRSolver<Scalar>::compute(MatrixType const &A)
 		}
 		Q = qv[0];
 
-  		for (int i = 1; i < n && i < m - 1; i++) {
+  		for (std::size_t i = 1; i < n && i < m - 1; i++) {
 
     		z1 = qv[i] * Q;
     		Q = z1;
