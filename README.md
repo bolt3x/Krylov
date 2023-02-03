@@ -10,7 +10,7 @@ git clone git@github.com:bolt3x/Krylov.git
 ```
 
 Inside the **src** folder there is the **Krylov.hpp** header,
-to use it in your code compile it with the flag
+to use it in your code include it and compile with the flag
 ```
 -I./path/to/krylov/header
 ```
