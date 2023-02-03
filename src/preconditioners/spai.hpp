@@ -56,7 +56,7 @@ public:
 
 		if constexpr(Sparsity == PATTERN::STATIC)
 		{
-			staticPattern(A,tol);
+			staticPattern(A);
 		}
 		else
 		{
@@ -103,17 +103,18 @@ public:
 	/*!
 	 * this method sets the sparsity pattern
 	 * based on A and a tolerance;
-	 * @param A 
-	 * @param tol
+	 * @param A
 	 */
 	template<class MatrixType>
-	void staticPattern(MatrixType const &A,Scalar &tol);
+	void staticPattern(MatrixType const &A);
 	/*!
 	 * this method sets the sparsity pattern to diagonal,
 	 * in case of dynamic sparsity pattern, it will start from here
 	 * @param diag the lenght of the diagonal
 	 */
 	void diagPattern(std::size_t const &d);
+
+	void setTol(Scalar &tol_){tol = tol_;}
 
 protected:
 	std::map<std::size_t,std::vector<std::size_t>> pattern;
@@ -124,7 +125,7 @@ protected:
 template<typename Scalar,PATTERN Sparsity>
 template<class MatrixType>
 void
-SpaiPreconditioner<Scalar,Sparsity>::staticPattern(MatrixType const &A,Scalar &tol)
+SpaiPreconditioner<Scalar,Sparsity>::staticPattern(MatrixType const &A)
 {
 	for(std::size_t i = 0; i < A.rows(); i++)
 	{
