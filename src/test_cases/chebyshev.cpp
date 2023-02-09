@@ -44,7 +44,7 @@ int main(){
  std::cout << "-------------------------" << std::endl;
 
  res = Krylov::plotCSRMatrix<double>(A,"original");
- res = Krylov::plotCSRMatrix<double>(spaiD.getM(),"dynamic");
+ res = Krylov::plotCSRMatrix<double>(spaiD.getM(),"dynamic");               
  res = Krylov::plotCSRMatrix<double>(spaiS.getM(),"static");
 
  

@@ -14,6 +14,7 @@
 //preconditioners
 #include "./preconditioners/diag.hpp"
 #include "./preconditioners/spai.hpp"
+#include "./preconditioners/sgs.hpp"
 #include "./preconditioners/identity.hpp"
 
 //direct solvers

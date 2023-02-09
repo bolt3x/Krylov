@@ -14,6 +14,8 @@ int main(){
  Krylov::SpaiPreconditioner<double> spaiS(A);
  Krylov::IdentityPreconditioner<double> id(A);
  Krylov::DiagPreconditioner<double> diag(A);
+ Krylov::SymmetricSGSPreconditioner<double,Krylov::SparseMatrix<double>> sgs(A);
+
  int res;
  int max_iter;
  double tol;
@@ -40,8 +42,20 @@ int main(){
  std::cout << "Error norm: " << (x-xe).norm() << std::endl;
  std::cout << "-------------------------" << std::endl;
 
+  x = Krylov::Vector<double>(n,0);
+ tol = 1e-9;
+ max_iter = 1000;
+ res = CG(A,x,b,sgs,max_iter,tol);
+ std::cout << std::endl << "-------------------------" << std::endl;
+ std::cout << "Symmetric Gauss Seidel Preconditioner" << std::endl;
+ std::cout << "Iterations: " << max_iter << std::endl;
+ std::cout << "Residual: " << tol << std::endl;
+ std::cout << "Error norm: " << (x-xe).norm() << std::endl;
+ std::cout << "-------------------------" << std::endl;
+
  res = Krylov::plotCSRMatrix<double>(A,"original");
  res = Krylov::plotCSRMatrix<double>(spaiD.getM(),"dynamic");
  res = Krylov::plotCSRMatrix<double>(spaiS.getM(),"static");
+ 
  return 0;
 }

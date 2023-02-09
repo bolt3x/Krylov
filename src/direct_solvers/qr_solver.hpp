@@ -42,12 +42,12 @@ public:
 	template<class VectorType>
 	Matrix householder(VectorType const &v) const;
 
-	Matrix getQ()
+	const Matrix& getQ() const
 	{
 		return Q;
 	}
 
-	Matrix getR()
+	const Matrix& getR() const
 	{
 		return R;
 	}

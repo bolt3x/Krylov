@@ -17,6 +17,7 @@
 #include <algorithm>
 #include "../direct_solvers/qr_solver.hpp"
 #include "../base_classes/sparse_matrix.hpp"
+#include "../utils/plotter.hpp"
 
 
 // To avoid stupid warnings if I do not use openmp
