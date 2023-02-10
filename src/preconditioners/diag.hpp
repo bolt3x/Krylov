@@ -49,7 +49,7 @@ public:
 			if(A(i,i))
 				diag[i] = 1 / A(i,i);  
 			else	
-				diag[i] = 0;
+				diag[i] = 1;
         }	
     }
 	/*!

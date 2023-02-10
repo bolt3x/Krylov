@@ -33,6 +33,13 @@ enum class PATTERN
   STATIC = 0,
   DYNAMIC = 1
 };
+
+enum class SPARSITY
+{
+	LOW = 1,
+	MEDIUM = 2,
+	HIGH = 4
+};
 /*!
  * An identity "preconditioner" class
  * @tparam Scalar element
@@ -52,17 +59,12 @@ public:
 	 *  @param A matrix from which we compute the inverse
 	 */
 	template<class MatrixType>
-	SpaiPreconditioner(MatrixType const &A) : M(A.rows(),A.cols())
+	SpaiPreconditioner(MatrixType const &A,SPARSITY const &sp_ = SPARSITY::MEDIUM) : M(A.rows(),A.cols()),sp(sp_)
 	{	
 
-		if constexpr(Sparsity == PATTERN::STATIC)
-		{
-			staticPattern(A);
-		}
-		else
-		{
-			diagPattern(A.rows());
-		}
+		staticPattern(A);
+	
+	
 		M.rowPtrs.resize(1);
 		compute(A,tol);
 	}
@@ -116,11 +118,13 @@ public:
 	void diagPattern(std::size_t const &d);
 
 	void setTol(Scalar &tol_){tol = tol_;}
+	void setSparsity(SPARSITY &sp_){sp = sp_;}
 
 protected:
 	std::map<std::size_t,std::vector<std::size_t>> pattern;
 	SparseMatrix M;
 	Scalar tol = 0.2;
+	SPARSITY sp;
 };
 
 template<typename Scalar,PATTERN Sparsity>
@@ -225,13 +229,14 @@ SpaiPreconditioner<Scalar,Sparsity>::compute(MatrixType const &A,Scalar &tol)
 				for(std::size_t j = 0; j < J.size(); j++)
 				{
 					AJ(i,j) = A(i,J[j]);
-				}
+				}	
 			}
 			Vector r = AJ * m[k] - e_k ;
 
 			res = r.norm();
-	
-			if(res < tol || m[k].size() >= A.nonzero() / A.rows() || Sparsity == PATTERN::STATIC)
+			
+			Scalar sparsity = Scalar(sp); 
+			if(res < tol || m[k].size() >= A.nonzero() / (A.rows()* sparsity) || Sparsity == PATTERN::STATIC)
 			{
 				
 				pattern[k] = J;
